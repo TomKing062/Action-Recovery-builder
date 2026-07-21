@@ -161,10 +161,15 @@ jobs:
       working-directory: ${{ steps.pwd.outputs.workspace-folder }}
 
     - name: Building recovery
+      continue-on-error: true
       run: |
         source build/envsetup.sh
         export ALLOW_MISSING_DEPENDENCIES=true
         lunch ${{ github.event.inputs.MAKEFILE_NAME }}-eng && make clean && make ${{ github.event.inputs.BUILD_TARGET }}image -j$(nproc --all)
+        mv workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/vendor_boot.img workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/vendor_boot_0.img
+        cp -f ./${{ github.event.inputs.DEVICE_PATH }}/BoardConfig_bkp.mk ./${{ github.event.inputs.DEVICE_PATH }}/BoardConfig.mk
+        lunch ${{ github.event.inputs.MAKEFILE_NAME }}-eng && make clean && make ${{ github.event.inputs.BUILD_TARGET }}image -j$(nproc --all)
+        mv workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/vendor_boot.img workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/vendor_boot_1.img
       working-directory: ${{ steps.pwd.outputs.workspace-folder }}
 
     - name: Upload to Release
