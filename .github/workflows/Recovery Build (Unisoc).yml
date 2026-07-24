@@ -166,13 +166,22 @@ jobs:
         lunch ${{ github.event.inputs.MAKEFILE_NAME }}-eng && make clean && make ${{ github.event.inputs.BUILD_TARGET }}image -j$(nproc --all)
       working-directory: ${{ steps.pwd.outputs.workspace-folder }}
 
+    - name: repack recovery
+      run: |
+        mkdir vbr
+        cp workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/vendor_boot.img vbr/
+        wget https://raw.githubusercontent.com/magojohnji/magiskboot-linux/main/x86_64/magiskboot
+        chmod +x magiskboot
+        cd vbr
+        ../magiskboot unpack vendor_boot.img
+        cp -f ../workspace/${{ github.event.inputs.DEVICE_PATH }}/prebuilt/ramdisk.cpio ./vendor_ramdisk/ramdisk.cpio
+        ../magiskboot repack vendor_boot.img vendor_boot_repack.img
+
     - name: Upload to Release
       uses: softprops/action-gh-release@v2
       with:
-        files: | 
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/${{ github.event.inputs.BUILD_TARGET }}.img
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*.zip
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*vendor*.img
+        files: |
+          vbr/vendor_boot_repack.img
         name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
         tag_name: ${{ github.run_id }}
         body: |
