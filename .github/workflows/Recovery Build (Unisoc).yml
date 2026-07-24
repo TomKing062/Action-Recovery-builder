@@ -166,7 +166,7 @@ jobs:
         lunch ${{ github.event.inputs.MAKEFILE_NAME }}-eng && make clean && make ${{ github.event.inputs.BUILD_TARGET }}image -j$(nproc --all)
       working-directory: ${{ steps.pwd.outputs.workspace-folder }}
 
-    - name: repack recovery
+    - name: repack recovery 1
       continue-on-error: true
       run: |
         mkdir vbr
@@ -175,6 +175,10 @@ jobs:
         chmod +x magiskboot
         cd vbr
         ../magiskboot unpack vendor_boot.img
+
+    - name: repack recovery 2
+      run: |
+        cd vbr
         cp -f ../workspace/${{ github.event.inputs.DEVICE_PATH }}/prebuilt/ramdisk.cpio ./vendor_ramdisk/ramdisk.cpio
         ../magiskboot repack vendor_boot.img vendor_boot_repack.img
 
