@@ -167,6 +167,7 @@ jobs:
       working-directory: ${{ steps.pwd.outputs.workspace-folder }}
 
     - name: repack recovery
+      continue-on-error: true
       run: |
         mkdir vbr
         cp workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/vendor_boot.img vbr/
